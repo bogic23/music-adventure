@@ -11,7 +11,15 @@
     <string name="back">Back</string>
     <string name="training_chord_title">Training Grounds</string>
     <string name="training_chord_subtitle">Triads to advanced harmony</string>
-    <string name="training_mode_choose">What do you want to study?</string>
+    <string name="training_mode_choose">Training paths</string>
+    <string name="training_mode_choose_hint">Tap a path — lesson details appear first, then pick a section and topic below.</string>
+    <string name="training_step_sections">Step 1</string>
+    <string name="training_step_lessons">Step 2</string>
+    <string name="training_mode_chord_desc">Chords, audio &amp; ear training</string>
+    <string name="training_mode_reading_desc">Notation &amp; rhythm theory</string>
+    <string name="training_mode_intervals_desc">2nd through octave</string>
+    <string name="training_mode_scales_desc">Major, minor &amp; modes</string>
+    <string name="training_mode_harmonic_desc">Coming soon</string>
     <string name="training_mode_chord">Chords</string>
     <string name="training_mode_reading">Reading</string>
     <string name="training_mode_intervals">Intervals</string>
@@ -59,4 +67,37 @@
     <string name="training_ear_wrong">Not quite — the answer was %1$s.</string>
     <string name="training_ear_empty">Please enter a chord name.</string>
     <string name="training_ear_playing">Listen…</string>
+
+    <string name="adventure_quest_title">Music RPG Quest</string>
+    <string name="adventure_quest_number">Quest %1$d</string>
+    <string name="adventure_category">Training: %1$s</string>
+    <string name="adventure_hp_label">Health</string>
+    <string name="adventure_mp_label">Mana</string>
+    <string name="adventure_hp_value">HP: %1$d/%2$d</string>
+    <string name="adventure_mp_value">MP: %1$d/%2$d</string>
+    <string name="adventure_question_label">Quest challenge</string>
+    <string name="adventure_choose_answer">Choose your answer</string>
+    <string name="adventure_battle_hint">Answer before the timer ends.\n• Correct → +1 MP\n• Wrong or timeout → −15 HP</string>
+    <string name="adventure_timer_seconds">%1$ds</string>
+    <string name="adventure_timer_expired">0s</string>
+    <string name="adventure_guest_blocked">Adventure mode requires a username. Guests can use Training and Profile only.</string>
+    <string name="adventure_guest_menu">Create a username to unlock Adventure mode and save progress on this device.</string>
+    <string name="adventure_correct_toast">Correct! +1 MP</string>
+    <string name="adventure_timeout_reason">Time ran out!</string>
+    <string name="adventure_wrong_reason">Correct answer: %1$s</string>
+    <string name="adventure_hit_title">You were hit!</string>
+    <string name="adventure_hit_message">−%1$d HP\n\n%2$s</string>
+    <string name="adventure_retry_quest">Try again</string>
+    <string name="adventure_checkpoint_title">Checkpoint</string>
+    <string name="adventure_checkpoint_message">You cleared %1$d quests!\n\nHP: %2$d · MP: %3$d\n\nSave your game or heal with MP (1 MP = 5 HP).</string>
+    <string name="adventure_heal_mp">Heal (1 MP)</string>
+    <string name="adventure_save_game">Save game</string>
+    <string name="adventure_continue">Continue</string>
+    <string name="adventure_saved_toast">Progress saved on this device</string>
+    <string name="adventure_no_mp">Not enough MP to heal</string>
+    <string name="adventure_hp_full">HP is already full</string>
+    <string name="adventure_healed_toast">Healed %1$d HP (used 1 MP = %2$d HP)</string>
+    <string name="adventure_game_over_title">Game Over</string>
+    <string name="adventure_game_over_message">Your HP reached zero. Progress was saved and HP restored to 50 for your next run.</string>
+    <string name="adventure_back_menu">Back to menu</string>
 </resources>

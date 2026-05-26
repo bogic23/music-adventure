@@ -4,9 +4,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/music_adventure"
         android:label="Music Adventure"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/music_adventure"
         android:supportsRtl="true"
         android:theme="@style/Theme.MusicAdventure"
         tools:targetApi="31">

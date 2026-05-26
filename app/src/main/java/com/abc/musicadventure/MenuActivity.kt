@@ -3,6 +3,7 @@ package com.abc.musicadventure
 import android.content.Intent
 import android.os.Bundle
 import android.view.animation.AnimationUtils
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.abc.musicadventure.databinding.ActivityMenuBinding
 import com.abc.musicadventure.managers.GameManager
@@ -42,6 +43,14 @@ class MenuActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         binding.btnAdventure.setOnClickListener {
+            if (GameManager.isGuest()) {
+                AlertDialog.Builder(this)
+                    .setTitle(R.string.adventure)
+                    .setMessage(R.string.adventure_guest_menu)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+                return@setOnClickListener
+            }
             startActivity(Intent(this, AdventureActivity::class.java))
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
         }

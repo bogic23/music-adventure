@@ -12,9 +12,9 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import com.abc.musicadventure.audio.ChordTonePlayer
 import com.abc.musicadventure.databinding.ActivityTrainingBinding
-import com.abc.musicadventure.databinding.ItemChordLessonBinding
-import com.abc.musicadventure.databinding.ItemReadingLessonBinding
 import com.abc.musicadventure.managers.GameManager
+import com.abc.musicadventure.ui.NavCardItem
+import com.abc.musicadventure.ui.TrainingGridHelper
 import com.abc.musicadventure.models.ChordCategory
 import com.abc.musicadventure.models.ChordType
 import com.abc.musicadventure.models.IntervalGroup
@@ -23,9 +23,6 @@ import com.abc.musicadventure.models.ReadingLesson
 import com.abc.musicadventure.models.ReadingTopic
 import com.abc.musicadventure.models.ScaleCategory
 import com.abc.musicadventure.models.ScaleLesson
-import com.google.android.material.card.MaterialCardView
-import com.google.android.material.chip.Chip
-
 class TrainingActivity : AppCompatActivity() {
 
     private enum class TrainingMode(val id: String) {
@@ -51,12 +48,6 @@ class TrainingActivity : AppCompatActivity() {
     private var earQuizChord: ChordType? = null
     private var earQuizRoot: String = "C"
     private var earQuizUseBlock: Boolean = true
-    private var updatingCategoryChips = false
-    private var updatingReadingTopicChips = false
-    private var updatingTrainingModeChips = false
-    private var updatingIntervalGroupChips = false
-    private var updatingScaleCategoryChips = false
-
     private var trainingMode: TrainingMode = TrainingMode.CHORD
     private var selectedReadingTopic: ReadingTopic = ReadingTopic.NOTATION
     private var selectedReadingLesson: ReadingLesson =
@@ -73,11 +64,11 @@ class TrainingActivity : AppCompatActivity() {
         binding = ActivityTrainingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupTrainingModeChips()
-        setupCategoryChips()
-        setupReadingTopicChips()
-        setupIntervalGroupChips()
-        setupScaleCategoryChips()
+        setupTrainingModeGrid()
+        buildChordSectionGrid()
+        buildReadingSectionGrid()
+        buildIntervalSectionGrid()
+        buildScaleSectionGrid()
         setupListeners()
         showTrainingMode(TrainingMode.CHORD)
         selectCategory(ChordCategory.TRIADS)
@@ -86,37 +77,35 @@ class TrainingActivity : AppCompatActivity() {
         selectScaleCategory(ScaleCategory.DIATONIC)
     }
 
-    private fun setupTrainingModeChips() {
-        val chipGroup = binding.chipGroupTrainingModes
-        chipGroup.removeAllViews()
-
-        val modes = listOf(
-            TrainingMode.CHORD to R.string.training_mode_chord,
-            TrainingMode.READING to R.string.training_mode_reading,
-            TrainingMode.INTERVALS to R.string.training_mode_intervals,
-            TrainingMode.SCALES to R.string.training_mode_scales,
-            TrainingMode.HARMONIC to R.string.training_mode_harmonic
+    private fun setupTrainingModeGrid() {
+        val items = listOf(
+            modeNavItem(TrainingMode.CHORD, R.string.training_mode_chord, R.string.training_mode_chord_desc, "🎹"),
+            modeNavItem(TrainingMode.READING, R.string.training_mode_reading, R.string.training_mode_reading_desc, "📖"),
+            modeNavItem(TrainingMode.INTERVALS, R.string.training_mode_intervals, R.string.training_mode_intervals_desc, "↔️"),
+            modeNavItem(TrainingMode.SCALES, R.string.training_mode_scales, R.string.training_mode_scales_desc, "🎼"),
+            modeNavItem(TrainingMode.HARMONIC, R.string.training_mode_harmonic, R.string.training_mode_harmonic_desc, "🎛️")
         )
-
-        modes.forEach { (mode, labelRes) ->
-            val chip = layoutInflater.inflate(
-                R.layout.item_training_category,
-                chipGroup,
-                false
-            ) as Chip
-            chip.id = View.generateViewId()
-            chip.text = getString(labelRes)
-            chip.tag = mode.id
-            chip.isCheckable = true
-            chipGroup.addView(chip)
-        }
-
-        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
-            if (updatingTrainingModeChips || checkedIds.isEmpty()) return@setOnCheckedStateChangeListener
-            val chip = findCheckedChip(group) ?: return@setOnCheckedStateChangeListener
-            showTrainingMode(TrainingMode.fromId(chip.tag as String))
-        }
+        TrainingGridHelper.populateTwoColumnGrid(
+            container = binding.gridTrainingModes,
+            inflater = layoutInflater,
+            layoutRes = R.layout.item_training_mode_card,
+            items = items,
+            selectedId = trainingMode.id,
+            accentColorRes = R.color.cyan_primary,
+            bindViews = TrainingGridHelper::bindModeCard,
+            onItemClick = { item ->
+                showTrainingMode(TrainingMode.fromId(item.id))
+                binding.scrollTraining.smoothScrollTo(0, 0)
+            }
+        )
     }
+
+    private fun modeNavItem(
+        mode: TrainingMode,
+        titleRes: Int,
+        descRes: Int,
+        icon: String
+    ) = NavCardItem(mode.id, getString(titleRes), getString(descRes), icon)
 
     private fun showTrainingMode(mode: TrainingMode) {
         trainingMode = mode
@@ -132,13 +121,11 @@ class TrainingActivity : AppCompatActivity() {
             resetEarQuizUi()
         }
 
-        val chipGroup = binding.chipGroupTrainingModes
-        updatingTrainingModeChips = true
-        for (i in 0 until chipGroup.childCount) {
-            val chip = chipGroup.getChildAt(i) as Chip
-            chip.isChecked = chip.tag == mode.id
-        }
-        updatingTrainingModeChips = false
+        TrainingGridHelper.refreshGridSelection(
+            binding.gridTrainingModes,
+            mode.id,
+            R.color.cyan_primary
+        )
 
         when (mode) {
             TrainingMode.CHORD -> {
@@ -170,36 +157,28 @@ class TrainingActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private fun setupCategoryChips() {
-        val chipGroup = binding.chipGroupCategories
-        chipGroup.removeAllViews()
-
-        ChordCategory.entries.forEach { category ->
-            val chip = layoutInflater.inflate(
-                R.layout.item_training_category,
-                chipGroup,
-                false
-            ) as Chip
-            chip.id = View.generateViewId()
-            chip.text = category.title
-            chip.tag = category.id
-            chip.isCheckable = true
-            chipGroup.addView(chip)
+    private fun buildChordSectionGrid() {
+        val items = ChordCategory.entries.map { category ->
+            NavCardItem(category.id, category.title, category.subtitle, chordCategoryIcon(category))
         }
-
-        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
-            if (updatingCategoryChips || checkedIds.isEmpty()) return@setOnCheckedStateChangeListener
-            val chip = findCheckedChip(group) ?: return@setOnCheckedStateChangeListener
-            selectCategory(ChordCategory.fromId(chip.tag as String))
-        }
+        TrainingGridHelper.populateTwoColumnGrid(
+            container = binding.chordSectionsGrid,
+            inflater = layoutInflater,
+            layoutRes = R.layout.item_section_card,
+            items = items,
+            selectedId = selectedCategory.id,
+            accentColorRes = R.color.cyan_primary,
+            bindViews = TrainingGridHelper::bindSectionCard,
+            onItemClick = { item -> selectCategory(ChordCategory.fromId(item.id)) }
+        )
     }
 
-    private fun findCheckedChip(group: ViewGroup): Chip? {
-        for (i in 0 until group.childCount) {
-            val chip = group.getChildAt(i) as? Chip ?: continue
-            if (chip.isChecked) return chip
-        }
-        return null
+    private fun chordCategoryIcon(category: ChordCategory): String = when (category) {
+        ChordCategory.TRIADS -> "3"
+        ChordCategory.SEVENTHS -> "7"
+        ChordCategory.EXTENSIONS -> "9"
+        ChordCategory.SUSPENDED -> "sus"
+        ChordCategory.SPECIAL -> "alt"
     }
 
     private fun selectCategory(category: ChordCategory) {
@@ -213,64 +192,44 @@ class TrainingActivity : AppCompatActivity() {
             binding.tvSubtitle.text = "${category.title} · ${category.subtitle}"
         }
 
-        val chipGroup = binding.chipGroupCategories
-        updatingCategoryChips = true
-        for (i in 0 until chipGroup.childCount) {
-            val chip = chipGroup.getChildAt(i) as Chip
-            chip.isChecked = chip.tag == category.id
-        }
-        updatingCategoryChips = false
-
-        populateChordList(chords)
+        TrainingGridHelper.refreshGridSelection(
+            binding.chordSectionsGrid,
+            category.id,
+            R.color.cyan_primary
+        )
+        populateChordLessonsGrid(chords)
         updateLessonPanel()
         resetEarQuizUi()
     }
 
-    private fun populateChordList(chords: List<ChordType>) {
-        val container = binding.chordsContainer
-        container.removeAllViews()
-
-        chords.forEach { chord ->
-            val itemBinding = ItemChordLessonBinding.inflate(layoutInflater, container, false)
-            bindChordItem(itemBinding, chord)
-            container.addView(itemBinding.root)
+    private fun populateChordLessonsGrid(chords: List<ChordType>) {
+        val items = chords.map { chord ->
+            NavCardItem(
+                id = chord.id,
+                title = chord.name,
+                subtitle = chord.formula,
+                icon = chord.displayLabel(chord.exampleRoot)
+            )
         }
-    }
-
-    private fun bindChordItem(itemBinding: ItemChordLessonBinding, chord: ChordType) {
-        val root = chord.exampleRoot
-        itemBinding.tvChordSymbol.text = chord.displayLabel(root)
-        itemBinding.tvChordName.text = chord.name
-        itemBinding.tvChordFormula.text = chord.formula
-
-        val card = itemBinding.root as MaterialCardView
-        val isSelected = chord.id == selectedChord.id
-        applyChordSelection(card, isSelected)
-
-        card.setOnClickListener {
-            selectedChord = chord
-            exampleRoot = chord.exampleRoot
-            refreshChordSelections()
-            updateLessonPanel()
-            binding.scrollTraining.smoothScrollTo(0, binding.cardLesson.top)
-        }
-    }
-
-    private fun refreshChordSelections() {
-        val container = binding.chordsContainer
-        val chords = ChordType.forCategory(selectedCategory)
-        for (i in 0 until container.childCount) {
-            val card = container.getChildAt(i) as MaterialCardView
-            applyChordSelection(card, chords.getOrNull(i)?.id == selectedChord.id)
-        }
-    }
-
-    private fun applyChordSelection(card: MaterialCardView, selected: Boolean) {
-        val strokeColor = if (selected) R.color.cyan_primary else R.color.blue_light
-        val strokeWidth = if (selected) 2 else 1
-        card.strokeColor = ContextCompat.getColor(this, strokeColor)
-        card.strokeWidth = strokeWidth
-        card.cardElevation = if (selected) 8f else 2f
+        TrainingGridHelper.populateLessonGrid(
+            container = binding.chordLessonsGrid,
+            inflater = layoutInflater,
+            items = items,
+            selectedId = selectedChord.id,
+            accentColorRes = R.color.cyan_primary,
+            onItemClick = { item ->
+                val chord = chords.first { it.id == item.id }
+                selectedChord = chord
+                exampleRoot = chord.exampleRoot
+                TrainingGridHelper.refreshGridSelection(
+                    binding.chordLessonsGrid,
+                    chord.id,
+                    R.color.cyan_primary
+                )
+                updateLessonPanel()
+                binding.scrollTraining.smoothScrollTo(0, binding.cardLesson.top)
+            }
+        )
     }
 
     private fun updateLessonPanel() {
@@ -283,28 +242,29 @@ class TrainingActivity : AppCompatActivity() {
         binding.tvLessonStructure.text = chord.structure
     }
 
-    private fun setupReadingTopicChips() {
-        val chipGroup = binding.chipGroupReadingTopics
-        chipGroup.removeAllViews()
-
-        ReadingTopic.entries.forEach { topic ->
-            val chip = layoutInflater.inflate(
-                R.layout.item_training_category,
-                chipGroup,
-                false
-            ) as Chip
-            chip.id = View.generateViewId()
-            chip.text = topic.title
-            chip.tag = topic.id
-            chip.isCheckable = true
-            chipGroup.addView(chip)
+    private fun buildReadingSectionGrid() {
+        val items = ReadingTopic.entries.map { topic ->
+            NavCardItem(topic.id, topic.title, topic.subtitle, readingTopicIcon(topic))
         }
+        TrainingGridHelper.populateTwoColumnGrid(
+            container = binding.readingSectionsGrid,
+            inflater = layoutInflater,
+            layoutRes = R.layout.item_section_card,
+            items = items,
+            selectedId = selectedReadingTopic.id,
+            accentColorRes = R.color.gold_primary,
+            bindViews = TrainingGridHelper::bindSectionCard,
+            onItemClick = { item -> selectReadingTopic(ReadingTopic.fromId(item.id)) }
+        )
+    }
 
-        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
-            if (updatingReadingTopicChips || checkedIds.isEmpty()) return@setOnCheckedStateChangeListener
-            val chip = findCheckedChip(group) ?: return@setOnCheckedStateChangeListener
-            selectReadingTopic(ReadingTopic.fromId(chip.tag as String))
-        }
+    private fun readingTopicIcon(topic: ReadingTopic): String = when (topic) {
+        ReadingTopic.NOTATION -> "𝄞"
+        ReadingTopic.KEY -> "♯"
+        ReadingTopic.TIME -> "4/4"
+        ReadingTopic.BEATS -> "♩"
+        ReadingTopic.MEASURE -> "│"
+        ReadingTopic.NOTE_VALUES -> "♪"
     }
 
     private fun selectReadingTopic(topic: ReadingTopic) {
@@ -313,68 +273,36 @@ class TrainingActivity : AppCompatActivity() {
         selectedReadingLesson = lessons.first()
 
         binding.tvReadingTopicOverview.text = topic.overview
-
-        val chipGroup = binding.chipGroupReadingTopics
-        updatingReadingTopicChips = true
-        for (i in 0 until chipGroup.childCount) {
-            val chip = chipGroup.getChildAt(i) as Chip
-            chip.isChecked = chip.tag == topic.id
-        }
-        updatingReadingTopicChips = false
-
-        populateReadingLessonList(lessons)
+        TrainingGridHelper.refreshGridSelection(
+            binding.readingSectionsGrid,
+            topic.id,
+            R.color.gold_primary
+        )
+        populateReadingLessonsGrid(lessons)
         updateReadingLessonPanel()
     }
 
-    private fun populateReadingLessonList(lessons: List<ReadingLesson>) {
-        val container = binding.readingLessonsContainer
-        container.removeAllViews()
-
-        lessons.forEach { lesson ->
-            val itemBinding = ItemReadingLessonBinding.inflate(layoutInflater, container, false)
-            bindReadingLessonItem(itemBinding, lesson)
-            container.addView(itemBinding.root)
+    private fun populateReadingLessonsGrid(lessons: List<ReadingLesson>) {
+        val items = lessons.map { lesson ->
+            NavCardItem(lesson.id, lesson.title, lesson.summary, readingTopicIcon(lesson.topic))
         }
-    }
-
-    private fun bindReadingLessonItem(itemBinding: ItemReadingLessonBinding, lesson: ReadingLesson) {
-        itemBinding.tvReadingIcon.text = readingLessonIcon(lesson)
-        itemBinding.tvReadingTitle.text = lesson.title
-        itemBinding.tvReadingSummary.text = lesson.summary
-
-        val card = itemBinding.root as MaterialCardView
-        applyLessonSelection(card, lesson.id == selectedReadingLesson.id, R.color.gold_primary)
-
-        card.setOnClickListener {
-            selectedReadingLesson = lesson
-            refreshReadingSelections()
-            updateReadingLessonPanel()
-            binding.scrollTraining.smoothScrollTo(0, binding.cardReadingLesson.top)
-        }
-    }
-
-    private fun refreshReadingSelections() {
-        val container = binding.readingLessonsContainer
-        val lessons = ReadingLesson.forTopic(selectedReadingTopic)
-        for (i in 0 until container.childCount) {
-            val card = container.getChildAt(i) as MaterialCardView
-            applyLessonSelection(
-                card,
-                lessons.getOrNull(i)?.id == selectedReadingLesson.id,
-                R.color.gold_primary
-            )
-        }
-    }
-
-    private fun applyLessonSelection(
-        card: MaterialCardView,
-        selected: Boolean,
-        accentColorRes: Int
-    ) {
-        val strokeColor = if (selected) accentColorRes else R.color.blue_light
-        card.strokeColor = ContextCompat.getColor(this, strokeColor)
-        card.strokeWidth = if (selected) 2 else 1
-        card.cardElevation = if (selected) 8f else 2f
+        TrainingGridHelper.populateLessonGrid(
+            container = binding.readingLessonsGrid,
+            inflater = layoutInflater,
+            items = items,
+            selectedId = selectedReadingLesson.id,
+            accentColorRes = R.color.gold_primary,
+            onItemClick = { item ->
+                selectedReadingLesson = lessons.first { it.id == item.id }
+                TrainingGridHelper.refreshGridSelection(
+                    binding.readingLessonsGrid,
+                    item.id,
+                    R.color.gold_primary
+                )
+                updateReadingLessonPanel()
+                binding.scrollTraining.smoothScrollTo(0, binding.cardReadingLesson.top)
+            }
+        )
     }
 
     private fun updateReadingLessonPanel() {
@@ -384,37 +312,31 @@ class TrainingActivity : AppCompatActivity() {
         binding.tvReadingLessonContent.text = lesson.content
     }
 
-    private fun readingLessonIcon(lesson: ReadingLesson): String = when (lesson.topic) {
-        ReadingTopic.NOTATION -> "𝄞"
-        ReadingTopic.KEY -> "♯"
-        ReadingTopic.TIME -> "4/4"
-        ReadingTopic.BEATS -> "♩"
-        ReadingTopic.MEASURE -> "│"
-        ReadingTopic.NOTE_VALUES -> "♪"
+    private fun buildIntervalSectionGrid() {
+        val items = IntervalGroup.entries.map { group ->
+            val hint = if (group.overview.length > 42) "${group.overview.take(42)}…" else group.overview
+            NavCardItem(group.id, group.title, hint, intervalGroupIcon(group))
+        }
+        TrainingGridHelper.populateTwoColumnGrid(
+            container = binding.intervalSectionsGrid,
+            inflater = layoutInflater,
+            layoutRes = R.layout.item_section_card,
+            items = items,
+            selectedId = selectedIntervalGroup.id,
+            accentColorRes = R.color.coral_primary,
+            bindViews = TrainingGridHelper::bindSectionCard,
+            onItemClick = { item -> selectIntervalGroup(IntervalGroup.fromId(item.id)) }
+        )
     }
 
-    private fun setupIntervalGroupChips() {
-        val chipGroup = binding.chipGroupIntervalGroups
-        chipGroup.removeAllViews()
-
-        IntervalGroup.entries.forEach { group ->
-            val chip = layoutInflater.inflate(
-                R.layout.item_training_category,
-                chipGroup,
-                false
-            ) as Chip
-            chip.id = View.generateViewId()
-            chip.text = group.title
-            chip.tag = group.id
-            chip.isCheckable = true
-            chipGroup.addView(chip)
-        }
-
-        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
-            if (updatingIntervalGroupChips || checkedIds.isEmpty()) return@setOnCheckedStateChangeListener
-            val chip = findCheckedChip(group) ?: return@setOnCheckedStateChangeListener
-            selectIntervalGroup(IntervalGroup.fromId(chip.tag as String))
-        }
+    private fun intervalGroupIcon(group: IntervalGroup): String = when (group) {
+        IntervalGroup.SECOND -> "2"
+        IntervalGroup.THIRD -> "3"
+        IntervalGroup.FOURTH -> "4"
+        IntervalGroup.FIFTH -> "5"
+        IntervalGroup.SIXTH -> "6"
+        IntervalGroup.SEVENTH -> "7"
+        IntervalGroup.OCTAVE -> "8"
     }
 
     private fun selectIntervalGroup(group: IntervalGroup) {
@@ -423,57 +345,36 @@ class TrainingActivity : AppCompatActivity() {
         selectedIntervalLesson = lessons.first()
 
         binding.tvIntervalGroupOverview.text = group.overview
-
-        val chipGroup = binding.chipGroupIntervalGroups
-        updatingIntervalGroupChips = true
-        for (i in 0 until chipGroup.childCount) {
-            val chip = chipGroup.getChildAt(i) as Chip
-            chip.isChecked = chip.tag == group.id
-        }
-        updatingIntervalGroupChips = false
-
-        populateIntervalLessonList(lessons)
+        TrainingGridHelper.refreshGridSelection(
+            binding.intervalSectionsGrid,
+            group.id,
+            R.color.coral_primary
+        )
+        populateIntervalLessonsGrid(lessons)
         updateIntervalLessonPanel()
     }
 
-    private fun populateIntervalLessonList(lessons: List<IntervalLesson>) {
-        val container = binding.intervalLessonsContainer
-        container.removeAllViews()
-
-        lessons.forEach { lesson ->
-            val itemBinding = ItemReadingLessonBinding.inflate(layoutInflater, container, false)
-            bindIntervalLessonItem(itemBinding, lesson)
-            container.addView(itemBinding.root)
+    private fun populateIntervalLessonsGrid(lessons: List<IntervalLesson>) {
+        val items = lessons.map { lesson ->
+            NavCardItem(lesson.id, lesson.title, lesson.shortLabel, lesson.shortLabel)
         }
-    }
-
-    private fun bindIntervalLessonItem(itemBinding: ItemReadingLessonBinding, lesson: IntervalLesson) {
-        itemBinding.tvReadingIcon.text = lesson.shortLabel
-        itemBinding.tvReadingTitle.text = lesson.title
-        itemBinding.tvReadingSummary.text = lesson.summary
-
-        val card = itemBinding.root as MaterialCardView
-        applyLessonSelection(card, lesson.id == selectedIntervalLesson.id, R.color.coral_primary)
-
-        card.setOnClickListener {
-            selectedIntervalLesson = lesson
-            refreshIntervalSelections()
-            updateIntervalLessonPanel()
-            binding.scrollTraining.smoothScrollTo(0, binding.cardIntervalLesson.top)
-        }
-    }
-
-    private fun refreshIntervalSelections() {
-        val container = binding.intervalLessonsContainer
-        val lessons = IntervalLesson.forGroup(selectedIntervalGroup)
-        for (i in 0 until container.childCount) {
-            val card = container.getChildAt(i) as MaterialCardView
-            applyLessonSelection(
-                card,
-                lessons.getOrNull(i)?.id == selectedIntervalLesson.id,
-                R.color.coral_primary
-            )
-        }
+        TrainingGridHelper.populateLessonGrid(
+            container = binding.intervalLessonsGrid,
+            inflater = layoutInflater,
+            items = items,
+            selectedId = selectedIntervalLesson.id,
+            accentColorRes = R.color.coral_primary,
+            onItemClick = { item ->
+                selectedIntervalLesson = lessons.first { it.id == item.id }
+                TrainingGridHelper.refreshGridSelection(
+                    binding.intervalLessonsGrid,
+                    item.id,
+                    R.color.coral_primary
+                )
+                updateIntervalLessonPanel()
+                binding.scrollTraining.smoothScrollTo(0, binding.cardIntervalLesson.top)
+            }
+        )
     }
 
     private fun updateIntervalLessonPanel() {
@@ -488,28 +389,20 @@ class TrainingActivity : AppCompatActivity() {
         binding.tvIntervalLessonContent.text = lesson.content
     }
 
-    private fun setupScaleCategoryChips() {
-        val chipGroup = binding.chipGroupScaleCategories
-        chipGroup.removeAllViews()
-
-        ScaleCategory.entries.forEach { category ->
-            val chip = layoutInflater.inflate(
-                R.layout.item_training_category,
-                chipGroup,
-                false
-            ) as Chip
-            chip.id = View.generateViewId()
-            chip.text = category.title
-            chip.tag = category.id
-            chip.isCheckable = true
-            chipGroup.addView(chip)
+    private fun buildScaleSectionGrid() {
+        val items = ScaleCategory.entries.map { category ->
+            NavCardItem(category.id, category.title, category.overview.take(48), "♯")
         }
-
-        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
-            if (updatingScaleCategoryChips || checkedIds.isEmpty()) return@setOnCheckedStateChangeListener
-            val chip = findCheckedChip(group) ?: return@setOnCheckedStateChangeListener
-            selectScaleCategory(ScaleCategory.fromId(chip.tag as String))
-        }
+        TrainingGridHelper.populateTwoColumnGrid(
+            container = binding.scaleSectionsGrid,
+            inflater = layoutInflater,
+            layoutRes = R.layout.item_section_card,
+            items = items,
+            selectedId = selectedScaleCategory.id,
+            accentColorRes = R.color.cyan_primary,
+            bindViews = TrainingGridHelper::bindSectionCard,
+            onItemClick = { item -> selectScaleCategory(ScaleCategory.fromId(item.id)) }
+        )
     }
 
     private fun selectScaleCategory(category: ScaleCategory) {
@@ -518,57 +411,36 @@ class TrainingActivity : AppCompatActivity() {
         selectedScaleLesson = lessons.first()
 
         binding.tvScaleCategoryOverview.text = category.overview
-
-        val chipGroup = binding.chipGroupScaleCategories
-        updatingScaleCategoryChips = true
-        for (i in 0 until chipGroup.childCount) {
-            val chip = chipGroup.getChildAt(i) as Chip
-            chip.isChecked = chip.tag == category.id
-        }
-        updatingScaleCategoryChips = false
-
-        populateScaleLessonList(lessons)
+        TrainingGridHelper.refreshGridSelection(
+            binding.scaleSectionsGrid,
+            category.id,
+            R.color.cyan_primary
+        )
+        populateScaleLessonsGrid(lessons)
         updateScaleLessonPanel()
     }
 
-    private fun populateScaleLessonList(lessons: List<ScaleLesson>) {
-        val container = binding.scaleLessonsContainer
-        container.removeAllViews()
-
-        lessons.forEach { lesson ->
-            val itemBinding = ItemReadingLessonBinding.inflate(layoutInflater, container, false)
-            bindScaleLessonItem(itemBinding, lesson)
-            container.addView(itemBinding.root)
+    private fun populateScaleLessonsGrid(lessons: List<ScaleLesson>) {
+        val items = lessons.map { lesson ->
+            NavCardItem(lesson.id, lesson.title, lesson.pattern, "♯")
         }
-    }
-
-    private fun bindScaleLessonItem(itemBinding: ItemReadingLessonBinding, lesson: ScaleLesson) {
-        itemBinding.tvReadingIcon.text = "♯"
-        itemBinding.tvReadingTitle.text = lesson.title
-        itemBinding.tvReadingSummary.text = lesson.summary
-
-        val card = itemBinding.root as MaterialCardView
-        applyLessonSelection(card, lesson.id == selectedScaleLesson.id, R.color.cyan_primary)
-
-        card.setOnClickListener {
-            selectedScaleLesson = lesson
-            refreshScaleSelections()
-            updateScaleLessonPanel()
-            binding.scrollTraining.smoothScrollTo(0, binding.cardScaleLesson.top)
-        }
-    }
-
-    private fun refreshScaleSelections() {
-        val container = binding.scaleLessonsContainer
-        val lessons = ScaleLesson.forCategory(selectedScaleCategory)
-        for (i in 0 until container.childCount) {
-            val card = container.getChildAt(i) as MaterialCardView
-            applyLessonSelection(
-                card,
-                lessons.getOrNull(i)?.id == selectedScaleLesson.id,
-                R.color.cyan_primary
-            )
-        }
+        TrainingGridHelper.populateLessonGrid(
+            container = binding.scaleLessonsGrid,
+            inflater = layoutInflater,
+            items = items,
+            selectedId = selectedScaleLesson.id,
+            accentColorRes = R.color.cyan_primary,
+            onItemClick = { item ->
+                selectedScaleLesson = lessons.first { it.id == item.id }
+                TrainingGridHelper.refreshGridSelection(
+                    binding.scaleLessonsGrid,
+                    item.id,
+                    R.color.cyan_primary
+                )
+                updateScaleLessonPanel()
+                binding.scrollTraining.smoothScrollTo(0, binding.cardScaleLesson.top)
+            }
+        )
     }
 
     private fun updateScaleLessonPanel() {

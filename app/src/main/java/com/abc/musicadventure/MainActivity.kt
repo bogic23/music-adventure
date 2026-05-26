@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         binding.btnLogin.setOnClickListener {
             val username = binding.etUsername.text.toString().trim()
 
-            if (GameManager.login(username)) {
+            if (GameManager.login(this, username, isGuest = false)) {
                 // Success animation
                 binding.btnLogin.startAnimation(
                     AnimationUtils.loadAnimation(this, R.anim.button_press)
@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnGuest.setOnClickListener {
-            if (GameManager.login("Guest_${(1000..9999).random()}")) {
+            if (GameManager.login(this, "Guest_${(1000..9999).random()}", isGuest = true)) {
                 startActivity(Intent(this, MenuActivity::class.java))
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
                 finish()
