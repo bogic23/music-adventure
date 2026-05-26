@@ -17,14 +17,29 @@ import com.abc.musicadventure.databinding.ItemReadingLessonBinding
 import com.abc.musicadventure.managers.GameManager
 import com.abc.musicadventure.models.ChordCategory
 import com.abc.musicadventure.models.ChordType
+import com.abc.musicadventure.models.IntervalGroup
+import com.abc.musicadventure.models.IntervalLesson
 import com.abc.musicadventure.models.ReadingLesson
 import com.abc.musicadventure.models.ReadingTopic
+import com.abc.musicadventure.models.ScaleCategory
+import com.abc.musicadventure.models.ScaleLesson
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 
 class TrainingActivity : AppCompatActivity() {
 
-    private enum class TrainingMode { CHORD, READING }
+    private enum class TrainingMode(val id: String) {
+        CHORD("chord"),
+        READING("reading"),
+        INTERVALS("intervals"),
+        SCALES("scales"),
+        HARMONIC("harmonic");
+
+        companion object {
+            fun fromId(id: String): TrainingMode =
+                entries.firstOrNull { it.id == id } ?: CHORD
+        }
+    }
 
     private lateinit var binding: ActivityTrainingBinding
     private val tonePlayer = ChordTonePlayer()
@@ -38,34 +53,68 @@ class TrainingActivity : AppCompatActivity() {
     private var earQuizUseBlock: Boolean = true
     private var updatingCategoryChips = false
     private var updatingReadingTopicChips = false
+    private var updatingTrainingModeChips = false
+    private var updatingIntervalGroupChips = false
+    private var updatingScaleCategoryChips = false
 
     private var trainingMode: TrainingMode = TrainingMode.CHORD
     private var selectedReadingTopic: ReadingTopic = ReadingTopic.NOTATION
     private var selectedReadingLesson: ReadingLesson =
         ReadingLesson.forTopic(ReadingTopic.NOTATION).first()
+    private var selectedIntervalGroup: IntervalGroup = IntervalGroup.SECOND
+    private var selectedIntervalLesson: IntervalLesson =
+        IntervalLesson.forGroup(IntervalGroup.SECOND).first()
+    private var selectedScaleCategory: ScaleCategory = ScaleCategory.DIATONIC
+    private var selectedScaleLesson: ScaleLesson =
+        ScaleLesson.forCategory(ScaleCategory.DIATONIC).first()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityTrainingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupModeToggle()
+        setupTrainingModeChips()
         setupCategoryChips()
         setupReadingTopicChips()
+        setupIntervalGroupChips()
+        setupScaleCategoryChips()
         setupListeners()
         showTrainingMode(TrainingMode.CHORD)
         selectCategory(ChordCategory.TRIADS)
         selectReadingTopic(ReadingTopic.NOTATION)
+        selectIntervalGroup(IntervalGroup.SECOND)
+        selectScaleCategory(ScaleCategory.DIATONIC)
     }
 
-    private fun setupModeToggle() {
-        binding.toggleTrainingMode.check(R.id.btnModeChord)
-        binding.toggleTrainingMode.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (!isChecked) return@addOnButtonCheckedListener
-            when (checkedId) {
-                R.id.btnModeChord -> showTrainingMode(TrainingMode.CHORD)
-                R.id.btnModeReading -> showTrainingMode(TrainingMode.READING)
-            }
+    private fun setupTrainingModeChips() {
+        val chipGroup = binding.chipGroupTrainingModes
+        chipGroup.removeAllViews()
+
+        val modes = listOf(
+            TrainingMode.CHORD to R.string.training_mode_chord,
+            TrainingMode.READING to R.string.training_mode_reading,
+            TrainingMode.INTERVALS to R.string.training_mode_intervals,
+            TrainingMode.SCALES to R.string.training_mode_scales,
+            TrainingMode.HARMONIC to R.string.training_mode_harmonic
+        )
+
+        modes.forEach { (mode, labelRes) ->
+            val chip = layoutInflater.inflate(
+                R.layout.item_training_category,
+                chipGroup,
+                false
+            ) as Chip
+            chip.id = View.generateViewId()
+            chip.text = getString(labelRes)
+            chip.tag = mode.id
+            chip.isCheckable = true
+            chipGroup.addView(chip)
+        }
+
+        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
+            if (updatingTrainingModeChips || checkedIds.isEmpty()) return@setOnCheckedStateChangeListener
+            val chip = findCheckedChip(group) ?: return@setOnCheckedStateChangeListener
+            showTrainingMode(TrainingMode.fromId(chip.tag as String))
         }
     }
 
@@ -73,6 +122,23 @@ class TrainingActivity : AppCompatActivity() {
         trainingMode = mode
         binding.panelChordTraining.isVisible = mode == TrainingMode.CHORD
         binding.panelReading.isVisible = mode == TrainingMode.READING
+        binding.panelIntervals.isVisible = mode == TrainingMode.INTERVALS
+        binding.panelScales.isVisible = mode == TrainingMode.SCALES
+        binding.panelHarmonic.isVisible = mode == TrainingMode.HARMONIC
+
+        if (mode != TrainingMode.CHORD) {
+            tonePlayer.stop()
+            hideKeyboard()
+            resetEarQuizUi()
+        }
+
+        val chipGroup = binding.chipGroupTrainingModes
+        updatingTrainingModeChips = true
+        for (i in 0 until chipGroup.childCount) {
+            val chip = chipGroup.getChildAt(i) as Chip
+            chip.isChecked = chip.tag == mode.id
+        }
+        updatingTrainingModeChips = false
 
         when (mode) {
             TrainingMode.CHORD -> {
@@ -83,9 +149,18 @@ class TrainingActivity : AppCompatActivity() {
             TrainingMode.READING -> {
                 binding.tvTitle.text = getString(R.string.training_mode_reading_header)
                 binding.tvSubtitle.text = getString(R.string.training_reading_subtitle)
-                tonePlayer.stop()
-                hideKeyboard()
-                resetEarQuizUi()
+            }
+            TrainingMode.INTERVALS -> {
+                binding.tvTitle.text = getString(R.string.training_mode_intervals_header)
+                binding.tvSubtitle.text = getString(R.string.training_intervals_subtitle)
+            }
+            TrainingMode.SCALES -> {
+                binding.tvTitle.text = getString(R.string.training_mode_scales_header)
+                binding.tvSubtitle.text = getString(R.string.training_scales_subtitle)
+            }
+            TrainingMode.HARMONIC -> {
+                binding.tvTitle.text = getString(R.string.training_mode_harmonic_header)
+                binding.tvSubtitle.text = getString(R.string.training_harmonic_subtitle)
             }
         }
     }
@@ -114,12 +189,12 @@ class TrainingActivity : AppCompatActivity() {
 
         chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
             if (updatingCategoryChips || checkedIds.isEmpty()) return@setOnCheckedStateChangeListener
-            val chip = findCheckedCategoryChip(group) ?: return@setOnCheckedStateChangeListener
+            val chip = findCheckedChip(group) ?: return@setOnCheckedStateChangeListener
             selectCategory(ChordCategory.fromId(chip.tag as String))
         }
     }
 
-    private fun findCheckedCategoryChip(group: ViewGroup): Chip? {
+    private fun findCheckedChip(group: ViewGroup): Chip? {
         for (i in 0 until group.childCount) {
             val chip = group.getChildAt(i) as? Chip ?: continue
             if (chip.isChecked) return chip
@@ -227,7 +302,7 @@ class TrainingActivity : AppCompatActivity() {
 
         chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
             if (updatingReadingTopicChips || checkedIds.isEmpty()) return@setOnCheckedStateChangeListener
-            val chip = findCheckedCategoryChip(group) ?: return@setOnCheckedStateChangeListener
+            val chip = findCheckedChip(group) ?: return@setOnCheckedStateChangeListener
             selectReadingTopic(ReadingTopic.fromId(chip.tag as String))
         }
     }
@@ -268,7 +343,7 @@ class TrainingActivity : AppCompatActivity() {
         itemBinding.tvReadingSummary.text = lesson.summary
 
         val card = itemBinding.root as MaterialCardView
-        applyReadingSelection(card, lesson.id == selectedReadingLesson.id)
+        applyLessonSelection(card, lesson.id == selectedReadingLesson.id, R.color.gold_primary)
 
         card.setOnClickListener {
             selectedReadingLesson = lesson
@@ -283,12 +358,20 @@ class TrainingActivity : AppCompatActivity() {
         val lessons = ReadingLesson.forTopic(selectedReadingTopic)
         for (i in 0 until container.childCount) {
             val card = container.getChildAt(i) as MaterialCardView
-            applyReadingSelection(card, lessons.getOrNull(i)?.id == selectedReadingLesson.id)
+            applyLessonSelection(
+                card,
+                lessons.getOrNull(i)?.id == selectedReadingLesson.id,
+                R.color.gold_primary
+            )
         }
     }
 
-    private fun applyReadingSelection(card: MaterialCardView, selected: Boolean) {
-        val strokeColor = if (selected) R.color.gold_primary else R.color.blue_light
+    private fun applyLessonSelection(
+        card: MaterialCardView,
+        selected: Boolean,
+        accentColorRes: Int
+    ) {
+        val strokeColor = if (selected) accentColorRes else R.color.blue_light
         card.strokeColor = ContextCompat.getColor(this, strokeColor)
         card.strokeWidth = if (selected) 2 else 1
         card.cardElevation = if (selected) 8f else 2f
@@ -304,10 +387,196 @@ class TrainingActivity : AppCompatActivity() {
     private fun readingLessonIcon(lesson: ReadingLesson): String = when (lesson.topic) {
         ReadingTopic.NOTATION -> "𝄞"
         ReadingTopic.KEY -> "♯"
-        ReadingTopic.TIME -> "𝄴"
+        ReadingTopic.TIME -> "4/4"
         ReadingTopic.BEATS -> "♩"
         ReadingTopic.MEASURE -> "│"
         ReadingTopic.NOTE_VALUES -> "♪"
+    }
+
+    private fun setupIntervalGroupChips() {
+        val chipGroup = binding.chipGroupIntervalGroups
+        chipGroup.removeAllViews()
+
+        IntervalGroup.entries.forEach { group ->
+            val chip = layoutInflater.inflate(
+                R.layout.item_training_category,
+                chipGroup,
+                false
+            ) as Chip
+            chip.id = View.generateViewId()
+            chip.text = group.title
+            chip.tag = group.id
+            chip.isCheckable = true
+            chipGroup.addView(chip)
+        }
+
+        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
+            if (updatingIntervalGroupChips || checkedIds.isEmpty()) return@setOnCheckedStateChangeListener
+            val chip = findCheckedChip(group) ?: return@setOnCheckedStateChangeListener
+            selectIntervalGroup(IntervalGroup.fromId(chip.tag as String))
+        }
+    }
+
+    private fun selectIntervalGroup(group: IntervalGroup) {
+        selectedIntervalGroup = group
+        val lessons = IntervalLesson.forGroup(group)
+        selectedIntervalLesson = lessons.first()
+
+        binding.tvIntervalGroupOverview.text = group.overview
+
+        val chipGroup = binding.chipGroupIntervalGroups
+        updatingIntervalGroupChips = true
+        for (i in 0 until chipGroup.childCount) {
+            val chip = chipGroup.getChildAt(i) as Chip
+            chip.isChecked = chip.tag == group.id
+        }
+        updatingIntervalGroupChips = false
+
+        populateIntervalLessonList(lessons)
+        updateIntervalLessonPanel()
+    }
+
+    private fun populateIntervalLessonList(lessons: List<IntervalLesson>) {
+        val container = binding.intervalLessonsContainer
+        container.removeAllViews()
+
+        lessons.forEach { lesson ->
+            val itemBinding = ItemReadingLessonBinding.inflate(layoutInflater, container, false)
+            bindIntervalLessonItem(itemBinding, lesson)
+            container.addView(itemBinding.root)
+        }
+    }
+
+    private fun bindIntervalLessonItem(itemBinding: ItemReadingLessonBinding, lesson: IntervalLesson) {
+        itemBinding.tvReadingIcon.text = lesson.shortLabel
+        itemBinding.tvReadingTitle.text = lesson.title
+        itemBinding.tvReadingSummary.text = lesson.summary
+
+        val card = itemBinding.root as MaterialCardView
+        applyLessonSelection(card, lesson.id == selectedIntervalLesson.id, R.color.coral_primary)
+
+        card.setOnClickListener {
+            selectedIntervalLesson = lesson
+            refreshIntervalSelections()
+            updateIntervalLessonPanel()
+            binding.scrollTraining.smoothScrollTo(0, binding.cardIntervalLesson.top)
+        }
+    }
+
+    private fun refreshIntervalSelections() {
+        val container = binding.intervalLessonsContainer
+        val lessons = IntervalLesson.forGroup(selectedIntervalGroup)
+        for (i in 0 until container.childCount) {
+            val card = container.getChildAt(i) as MaterialCardView
+            applyLessonSelection(
+                card,
+                lessons.getOrNull(i)?.id == selectedIntervalLesson.id,
+                R.color.coral_primary
+            )
+        }
+    }
+
+    private fun updateIntervalLessonPanel() {
+        val lesson = selectedIntervalLesson
+        binding.tvIntervalLessonTitle.text = lesson.title
+        binding.tvIntervalLessonSummary.text = lesson.summary
+        binding.tvIntervalLessonMeta.text = getString(
+            R.string.training_interval_semitones,
+            lesson.semitones,
+            lesson.shortLabel
+        )
+        binding.tvIntervalLessonContent.text = lesson.content
+    }
+
+    private fun setupScaleCategoryChips() {
+        val chipGroup = binding.chipGroupScaleCategories
+        chipGroup.removeAllViews()
+
+        ScaleCategory.entries.forEach { category ->
+            val chip = layoutInflater.inflate(
+                R.layout.item_training_category,
+                chipGroup,
+                false
+            ) as Chip
+            chip.id = View.generateViewId()
+            chip.text = category.title
+            chip.tag = category.id
+            chip.isCheckable = true
+            chipGroup.addView(chip)
+        }
+
+        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
+            if (updatingScaleCategoryChips || checkedIds.isEmpty()) return@setOnCheckedStateChangeListener
+            val chip = findCheckedChip(group) ?: return@setOnCheckedStateChangeListener
+            selectScaleCategory(ScaleCategory.fromId(chip.tag as String))
+        }
+    }
+
+    private fun selectScaleCategory(category: ScaleCategory) {
+        selectedScaleCategory = category
+        val lessons = ScaleLesson.forCategory(category)
+        selectedScaleLesson = lessons.first()
+
+        binding.tvScaleCategoryOverview.text = category.overview
+
+        val chipGroup = binding.chipGroupScaleCategories
+        updatingScaleCategoryChips = true
+        for (i in 0 until chipGroup.childCount) {
+            val chip = chipGroup.getChildAt(i) as Chip
+            chip.isChecked = chip.tag == category.id
+        }
+        updatingScaleCategoryChips = false
+
+        populateScaleLessonList(lessons)
+        updateScaleLessonPanel()
+    }
+
+    private fun populateScaleLessonList(lessons: List<ScaleLesson>) {
+        val container = binding.scaleLessonsContainer
+        container.removeAllViews()
+
+        lessons.forEach { lesson ->
+            val itemBinding = ItemReadingLessonBinding.inflate(layoutInflater, container, false)
+            bindScaleLessonItem(itemBinding, lesson)
+            container.addView(itemBinding.root)
+        }
+    }
+
+    private fun bindScaleLessonItem(itemBinding: ItemReadingLessonBinding, lesson: ScaleLesson) {
+        itemBinding.tvReadingIcon.text = "♯"
+        itemBinding.tvReadingTitle.text = lesson.title
+        itemBinding.tvReadingSummary.text = lesson.summary
+
+        val card = itemBinding.root as MaterialCardView
+        applyLessonSelection(card, lesson.id == selectedScaleLesson.id, R.color.cyan_primary)
+
+        card.setOnClickListener {
+            selectedScaleLesson = lesson
+            refreshScaleSelections()
+            updateScaleLessonPanel()
+            binding.scrollTraining.smoothScrollTo(0, binding.cardScaleLesson.top)
+        }
+    }
+
+    private fun refreshScaleSelections() {
+        val container = binding.scaleLessonsContainer
+        val lessons = ScaleLesson.forCategory(selectedScaleCategory)
+        for (i in 0 until container.childCount) {
+            val card = container.getChildAt(i) as MaterialCardView
+            applyLessonSelection(
+                card,
+                lessons.getOrNull(i)?.id == selectedScaleLesson.id,
+                R.color.cyan_primary
+            )
+        }
+    }
+
+    private fun updateScaleLessonPanel() {
+        val lesson = selectedScaleLesson
+        binding.tvScaleLessonTitle.text = lesson.title
+        binding.tvScaleLessonSummary.text = lesson.summary
+        binding.tvScaleLessonPattern.text = getString(R.string.training_scale_pattern, lesson.pattern)
+        binding.tvScaleLessonContent.text = lesson.content
     }
 
     private fun setupListeners() {
