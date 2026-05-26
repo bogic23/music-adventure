@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Music Adventure</string>
+    <string name="login">Start Adventure!</string>
+    <string name="guest">Play as Guest</string>
+    <string name="username">Enter your username</string>
+    <string name="adventure">Adventure Mode</string>
+    <string name="training">Training Grounds</string>
+    <string name="profile">My Profile</string>
+    <string name="logout">Logout</string>
+    <string name="back">Back</string>
+    <string name="training_chord_title">Training Grounds</string>
+    <string name="training_chord_subtitle">Triads to advanced harmony</string>
+    <string name="training_mode_choose">What do you want to study?</string>
+    <string name="training_mode_chord">Chord Training</string>
+    <string name="training_mode_reading">Reading</string>
+    <string name="training_mode_chord_header">Chord Training</string>
+    <string name="training_mode_reading_header">Reading Theory</string>
+    <string name="training_reading_subtitle">Notation, rhythm &amp; note values</string>
+    <string name="training_reading_pick_topic">Choose a theory topic</string>
+    <string name="training_reading_lessons">Lessons in this topic</string>
+    <string name="training_reading_theory">Theory</string>
+    <string name="training_pick_section">Choose a lesson section</string>
+    <string name="training_chords_in_section">Chords in this section</string>
+    <string name="training_chord_structure">Chord structure</string>
+    <string name="training_play_example">Play chord</string>
+    <string name="training_play_roll">Arpeggio</string>
+    <string name="training_ear_training">Ear training</string>
+    <string name="training_ear_training_desc">Start a quiz with a block chord or arpeggio, then type the chord name to check your answer.</string>
+    <string name="training_ear_quiz_choose">Random chord quiz — how should it play?</string>
+    <string name="training_ear_quiz_chord">Play chord</string>
+    <string name="training_ear_quiz_arpeggio">Arpeggio</string>
+    <string name="training_replay_chord">Listen again</string>
+    <string name="training_playing">Playing %1$s</string>
+    <string name="training_need_more_chords">Need at least two chord types in this section.</string>
+    <string name="training_listen_chord">Listen to the chord…</string>
+    <string name="training_ear_prompt">What chord did you hear? Type the chord name below.</string>
+    <string name="training_ear_input_hint">e.g. Major, m7, Cmaj7, sus4</string>
+    <string name="training_submit_answer">Check answer</string>
+    <string name="training_ear_correct">Correct! It was %1$s.</string>
+    <string name="training_ear_wrong">Not quite — the answer was %1$s.</string>
+    <string name="training_ear_empty">Please enter a chord name.</string>
+    <string name="training_ear_playing">Listen…</string>
+</resources>

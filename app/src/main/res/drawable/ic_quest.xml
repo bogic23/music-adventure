@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Treasure Map Background -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M25,15 L95,15 C100.52,15 105,19.48 105,25 L105,95 C105,100.52 100.52,105 95,105 L25,105 C19.48,105 15,100.52 15,95 L15,25 C15,19.48 19.48,15 25,15z"/>
+
+    <!-- Map fold lines -->
+    <path
+        android:fillColor="#FFC107"
+        android:pathData="M60,15 L60,105"/>
+
+    <!-- Map texture lines -->
+    <path
+        android:fillColor="#FFC107"
+        android:pathData="M15,60 L105,60"/>
+
+    <!-- Compass Rose - North pointer -->
+    <path
+        android:fillColor="#FF6B6B"
+        android:pathData="M55,30 L65,30 L70,45 L60,55 L50,45 Z"/>
+
+    <!-- Compass Rose - South pointer -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,65 L60,55 L70,65 L60,75 Z"/>
+
+    <!-- Compass Rose - East pointer -->
+    <path
+        android:fillColor="#4ECDC4"
+        android:pathData="M70,40 L85,45 L85,55 L70,60 Z"/>
+
+    <!-- Compass Rose - West pointer -->
+    <path
+        android:fillColor="#95E1D3"
+        android:pathData="M35,45 L50,40 L50,60 L35,55 Z"/>
+
+    <!-- Compass center -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M60,42A8,8 0 1,1 60,58A8,8 0 1,1 60,42z"/>
+
+    <!-- Quest marker (Red X) -->
+    <path
+        android:fillColor="#FF1744"
+        android:pathData="M85,70 L95,80 M95,70 L85,80"
+        android:strokeWidth="3"
+        android:strokeColor="#FF1744"/>
+
+    <!-- Quest marker circle -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M90,65A10,10 0 1,1 90,85A10,10 0 1,1 90,65z"
+        android:strokeWidth="2"
+        android:strokeColor="#FF1744"/>
+
+    <!-- Treasure chest icon -->
+    <path
+        android:fillColor="#8D6E63"
+        android:pathData="M25,80 L35,80 L35,90 L25,90 Z"/>
+    <path
+        android:fillColor="#6D4C41"
+        android:pathData="M23,75 L37,75 L37,80 L23,80 Z"/>
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M28,77 L32,77 L32,79 L28,79 Z"/>
+
+    <!-- Path dots -->
+    <path android:fillColor="#FF6B6B" android:pathData="M30,63A2,2 0 1,1 30,67A2,2 0 1,1 30,63z"/>
+    <path android:fillColor="#FF6B6B" android:pathData="M35,68A2,2 0 1,1 35,72A2,2 0 1,1 35,68z"/>
+    <path android:fillColor="#FF6B6B" android:pathData="M40,66A2,2 0 1,1 40,70A2,2 0 1,1 40,66z"/>
+    <path android:fillColor="#FF6B6B" android:pathData="M45,71A2,2 0 1,1 45,75A2,2 0 1,1 45,71z"/>
+    <path android:fillColor="#FF6B6B" android:pathData="M50,70A2,2 0 1,1 50,74A2,2 0 1,1 50,70z"/>
+</vector>

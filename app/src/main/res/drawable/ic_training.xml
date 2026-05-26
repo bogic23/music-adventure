@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+
+    <!-- Book base -->
+    <path
+        android:fillColor="#2196F3"
+        android:pathData="M12,12 L44,12 C47.31,12 50,14.69 50,18 L50,46 C50,49.31 47.31,52 44,52 L12,52 C7.58,52 4,48.42 4,44 L4,20 C4,15.58 7.58,12 12,12z"/>
+
+    <!-- Book spine -->
+    <path
+        android:fillColor="#1976D2"
+        android:pathData="M50,18 L50,46 C50,49.31 47.31,52 44,52 L12,52 C7.58,52 4,48.42 4,44 L4,20 C4,15.58 7.58,12 12,12 L44,12 C47.31,12 50,14.69 50,18z"/>
+
+    <!-- Book pages -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M8,18 L40,18 L40,48 L8,48 Z"/>
+
+    <!-- Music staff lines -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M14,28 L34,28 M14,32 L34,32 M14,36 L34,36 M14,40 L34,40 M14,44 L34,44"
+        android:strokeWidth="0.5"
+        android:strokeColor="#000000"/>
+
+    <!-- Music note 1 -->
+    <path
+        android:fillColor="#FF5722"
+        android:pathData="M20,24 L20,38 L17,37 L17,26 Z"/>
+    <path
+        android:fillColor="#FF5722"
+        android:pathData="M18,37A3,2 0 1,1 18,41A3,2 0 1,1 18,37z"/>
+
+    <!-- Music note 2 -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M28,22 L28,42 L25,41 L25,24 Z"/>
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M26,41A3,2 0 1,1 26,45A3,2 0 1,1 26,41z"/>
+
+    <!-- Music note 3 -->
+    <path
+        android:fillColor="#FF9800"
+        android:pathData="M24,26 L24,36 L22,35.5 L22,28 Z"/>
+    <path
+        android:fillColor="#FF9800"
+        android:pathData="M23,35.5A2.5,1.5 0 1,1 23,38.5A2.5,1.5 0 1,1 23,35.5z"/>
+
+    <!-- Pencil icon -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M42,8 L46,12 L34,24 L30,20 Z"/>
+    <path
+        android:fillColor="#FFA000"
+        android:pathData="M30,20 L34,24 L24,34 L20,30 Z"/>
+</vector>

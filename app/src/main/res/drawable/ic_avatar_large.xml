@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80">
+
+    <!-- Outer circle with gradient effect -->
+    <path
+        android:fillColor="#00BCD4"
+        android:pathData="M40,2C19.01,2 2,19.01 2,40s17.01,38 38,38 38,-17.01 38,-38S60.99,2 40,2z"/>
+
+    <!-- Inner circle -->
+    <path
+        android:fillColor="#26C6DA"
+        android:pathData="M40,6C21.22,6 6,21.22 6,40s15.22,34 34,34 34,-15.22 34,-34S58.78,6 40,6z"/>
+
+    <!-- Decorative ring -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M40,8C22.33,8 8,22.33 8,40s14.33,32 32,32 32,-14.33 32,-32S57.67,8 40,8z"
+        android:strokeWidth="2"
+        android:strokeColor="#B2EBF2"/>
+
+    <!-- Avatar head -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,30c4.42,0 8,-3.58 8,-8s-3.58,-8 -8,-8 -8,3.58 -8,8 3.58,8 8,8z"/>
+
+    <!-- Avatar body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,36c-6.5,0 -20,3.25 -20,9.75v4.25h40v-4.25c0,-6.5 -13.5,-9.75 -20,-9.75z"/>
+
+    <!-- Music note decoration (left) -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M18,40 L18,56 L15,55 L15,43 Z"/>
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M16,54.5A2.5,2.5 0 1,1 16,59.5A2.5,2.5 0 1,1 16,54.5z"/>
+
+    <!-- Music note decoration (right) -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M62,38 L62,54 L59,53 L59,41 Z"/>
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M60,52.5A2.5,2.5 0 1,1 60,57.5A2.5,2.5 0 1,1 60,52.5z"/>
+
+    <!-- Small stars decoration -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M25,22l0.8,2.5h2.7l-2.2,1.6 0.8,2.5 -2.1,-1.6 -2.1,1.6 0.8,-2.5 -2.2,-1.6h2.7z"/>
+
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M55,28l0.6,1.8h1.9l-1.5,1.1 0.6,1.8 -1.6,-1.1 -1.6,1.1 0.6,-1.8 -1.5,-1.1h1.9z"/>
+
+    <!-- Crown/Level badge -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M34,22 L40,17 L46,22 L44,26 L36,26 Z"/>
+    <path
+        android:fillColor="#FFA000"
+        android:pathData="M36,26 L44,26 L42,28 L38,28 Z"/>
+</vector>
